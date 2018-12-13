@@ -165,12 +165,21 @@ public class Main {
                             	String enumValueDocumentation = enumValueJson.getString(Field.Json.ENUM_VALUES_DOCUMENTATION);
                             	String enumValueConstructor = enumValueJson.getString(Field.Json.ENUM_VALUES_CONSTRUCTOR);
 	                            
-                            	int lenValueConstructor = enumValueConstructor.split(",").length;
+                            	String[] split = enumValueConstructor.split(",");
+                            	int lenValueConstructor = split.length;
                             	if (lenValueConstructor != lenConstructor) {
                             		// throw Error TODO
                             	      throw new IllegalArgumentException("Invalid Enum: '" + enumValueName + "'");
-                                      
-                            	}
+                                } else {
+                                	// Valid all field TODO pb 
+                                	for (int k = 0 ; k < lenConstructor; ++k) {
+                                		String value = split[k];
+                                		EnumConstructor c = enumConstructors.get(k);
+                                		if(!c.testValideValue(value)) {
+                                			throw new IllegalArgumentException("Invalid Enum: '" + value + "' Type : " + c.mTypeName + "'");
+                                		}
+                                	}
+                                }
                             	enumValues.add(new EnumValue(enumValueName, enumValueDocumentation, enumValueConstructor));
                             } else {
 	                            String enumValueName = (String) enumValueJson.keys().next();
@@ -180,6 +189,7 @@ public class Main {
                         }
                     }
                 }
+                
                 JSONObject foreignKeyJson = fieldJson.optJSONObject(Field.Json.FOREIGN_KEY);
                 ForeignKey foreignKey = null;
                 if (foreignKeyJson != null) {

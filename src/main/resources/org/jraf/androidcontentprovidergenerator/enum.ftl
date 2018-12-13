@@ -11,10 +11,14 @@ public enum ${field.enumName} {
     /**
      * ${enumValue.documentation!""}
      */
+    <#if field.enumConstructors?size != 0>
     ${enumValue.name}(${enumValue.constructor})<#if enumValue_has_next>,<#else>;</#if>
-
+    <#else>
+    ${enumValue.name}<#if enumValue_has_next>,<#else>;</#if>
+	</#if>
     </#list>
     
+    <#if field.enumConstructors?size != 0>
     <#list field.enumConstructors as enumConstructor> 
     public ${enumConstructor.typeName} ${enumConstructor.name};
     </#list>
@@ -24,4 +28,5 @@ public enum ${field.enumName} {
     	this.${enumConstructor.name} = ${enumConstructor.name};
     </#list>
     }
+    </#if>
 }

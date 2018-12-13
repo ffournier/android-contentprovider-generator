@@ -25,6 +25,8 @@
 
 package org.jraf.androidcontentprovidergenerator.model;
 
+import org.jraf.androidcontentprovidergenerator.Log;
+
 /**
  * @author 
  *
@@ -51,5 +53,62 @@ public class EnumConstructor {
     
     public String getTypeName() {
         return mTypeName;
+    }
+    
+    public boolean testValideValue(String value) {
+    	if (value == null)
+    		return true;
+        switch (mType) {
+        	case STRING:
+        		// control if we have quote in start and end
+        		if (value.startsWith("\"") && value.endsWith("\""))
+        			return true;
+            case BOOLEAN:
+                if ("true".equals(value) || "false".equals(value)) 
+                	return true;
+                break;
+            case INTEGER:
+            	try {
+            		Integer.parseInt(value);
+                	return true;
+                } catch (NumberFormatException e) {
+                    Log.w("TAG", "The default value for field " + value + "." + getName()
+                            + " could not be parsed as a numeric type, which is probably a problem", e);
+                }
+                break;
+            case LONG:
+            case DATE:
+            case ENUM:
+                try {
+                    Long.parseLong(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                    Log.w("TAG", "The default value for field " + value + "." + getName()
+                            + " could not be parsed as a numeric type, which is probably a problem", e);
+                }
+                break;
+            case FLOAT:
+            	try {
+                    Float.parseFloat(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                    Log.w("TAG", "The default value for field " + value + "." + getName()
+                            + " could not be parsed as a floating point type, which is probably a problem", e);
+                }
+            	break;
+            case DOUBLE:
+                try {
+                    Double.parseDouble(value);
+                    return true;
+                } catch (NumberFormatException e) {
+                    Log.w("TAG", "The default value for field " + value + "." + getName()
+                            + " could not be parsed as a floating point type, which is probably a problem", e);
+                }
+                break;
+            default:
+                // fallthrough
+                return false;
+        }
+        return false;
     }
 }
