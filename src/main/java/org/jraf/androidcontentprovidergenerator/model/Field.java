@@ -46,7 +46,13 @@ public class Field {
         public static final String DEFAULT_VALUE = "defaultValue";
         public static final String DEFAULT_VALUE_LEGACY = "default_value";
         public static final String ENUM_NAME = "enumName";
+        public static final String ENUM_CONSTRUCTOR = "enumConstructor";
+        public static final String ENUM_CONSTRUCTOR_TYPE = "type";
+        public static final String ENUM_CONSTRUCTOR_NAME = "name";
         public static final String ENUM_VALUES = "enumValues";
+        public static final String ENUM_VALUES_NAME = "name";
+        public static final String ENUM_VALUES_DOCUMENTATION = "documentation";
+        public static final String ENUM_VALUES_CONSTRUCTOR = "constructor";
         public static final String FOREIGN_KEY = "foreignKey";
         public static final String FOREIGN_KEY_TABLE = "table";
         public static final String FOREIGN_KEY_ON_DELETE_ACTION = "onDelete";
@@ -93,6 +99,10 @@ public class Field {
             mNullableJavaType = nullableJavaType;
             mNotNullableJavaType = notNullableJavaType;
             sTypeJsonNames.put(jsonName, this);
+        }
+        
+        public String getJsonName() {
+        	return mJsonName;
         }
 
         public static Type fromJsonName(String jsonName) {
@@ -143,7 +153,7 @@ public class Field {
             return res;
         }
     }
-
+    
     private static HashMap<String, Type> sTypeJsonNames = new HashMap<>();
     private static HashMap<String, OnDeleteAction> sOnDeleteActionJsonNames = new HashMap<>();
 
@@ -157,6 +167,7 @@ public class Field {
     private final boolean mIsAutoIncrement;
     private final String mDefaultValue;
     private final String mEnumName;
+    private final List<EnumConstructor> mEnumConstructors = new ArrayList<>();
     private final List<EnumValue> mEnumValues = new ArrayList<>();
     private final ForeignKey mForeignKey;
     private boolean mIsForeign;
@@ -165,7 +176,7 @@ public class Field {
     private String mPath;
 
     public Field(Entity entity, String name, String documentation, String type, boolean isId, boolean isIndex, boolean isNullable, boolean isAutoIncrement,
-            String defaultValue, String enumName, List<EnumValue> enumValues, ForeignKey foreignKey) {
+            String defaultValue, String enumName, List<EnumConstructor> enumConstructors,  List<EnumValue> enumValues, ForeignKey foreignKey) {
         mEntity = entity;
         mName = name;
         mDocumentation = documentation;
@@ -176,6 +187,8 @@ public class Field {
         mIsAutoIncrement = isAutoIncrement;
         mDefaultValue = defaultValue;
         mEnumName = enumName;
+        if (enumConstructors != null) mEnumConstructors.addAll(enumConstructors);
+        
         if (enumValues != null) mEnumValues.addAll(enumValues);
         mForeignKey = foreignKey;
     }
@@ -183,7 +196,7 @@ public class Field {
     public Field asForeignField(String path, boolean forceNullable) {
         boolean isNullable = forceNullable ? true : mIsNullable;
         Field res = new Field(mEntity, mName, mDocumentation, mType.mJsonName, mIsId, mIsIndex, isNullable, mIsAutoIncrement, mDefaultValue, mEnumName,
-                mEnumValues, mForeignKey);
+        		mEnumConstructors, mEnumValues, mForeignKey);
         res.mIsForeign = true;
         res.mOriginalField = this;
         res.mPath = path;
@@ -220,6 +233,10 @@ public class Field {
 
     public List<EnumValue> getEnumValues() {
         return mEnumValues;
+    }
+    
+    public List<EnumConstructor> getEnumConstructors() {
+        return mEnumConstructors;
     }
 
     public String getPrefixedName() {
@@ -339,6 +356,6 @@ public class Field {
     public String toString() {
         return "Field [mName=" + mName + ", mDocumentation=" + mDocumentation + ", mType=" + mType + ", mIsId=" + mIsId + ", mIsIndex=" + mIsIndex
                 + ", mIsNullable=" + mIsNullable + ", mIsAutoIncrement=" + mIsAutoIncrement + ", mDefaultValue=" + mDefaultValue + ", mEnumName=" + mEnumName
-                + ", mEnumValues=" + mEnumValues + ", mForeignKey=" + mForeignKey + "]";
+                + ", mEnumConstructors=" + mEnumConstructors + ", mEnumValues=" + mEnumValues + ", mForeignKey=" + mForeignKey + "]";
     }
 }

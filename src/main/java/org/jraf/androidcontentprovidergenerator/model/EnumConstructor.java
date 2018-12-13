@@ -22,28 +22,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.jraf.androidcontentprovidergenerator.model;
 
-public class EnumValue {
-    private final String mName;
-    private final String mDocumentation;
-    private final String mConstructor;
+/**
+ * @author 
+ *
+ */
+public class EnumConstructor {
 
-    public EnumValue(String name, String documentation, String constructor){
+	public String mName;
+	public Field.Type mType;
+	public String mTypeName;
+	
+	 public EnumConstructor(String name, Field.Type type){
         mName = name;
-        mDocumentation = documentation;
-        mConstructor = constructor == null ? "" : constructor;
+        mType = type;
+        mTypeName = type.getJsonName();
     }
 
     public String getName() {
         return mName;
     }
 
-    public String getDocumentation() {
-        return mDocumentation;
+    public Field.Type getType() {
+        return mType;
     }
     
-    public String getConstructor() {
-        return mConstructor;
+    public String getTypeName() {
+        return mTypeName;
     }
 }

@@ -11,7 +11,17 @@ public enum ${field.enumName} {
     /**
      * ${enumValue.documentation!""}
      */
-    ${enumValue.name},
+    ${enumValue.name}(${enumValue.constructor})<#if enumValue_has_next>,<#else>;</#if>
 
     </#list>
+    
+    <#list field.enumConstructors as enumConstructor> 
+    public ${enumConstructor.typeName} ${enumConstructor.name};
+    </#list>
+    
+    public ${field.enumName}(<#list field.enumConstructors as enumConstructor>${enumConstructor.typeName} ${enumConstructor.name}<#if enumConstructor_has_next>,<#else></#if></#list>) {
+   	<#list field.enumConstructors as enumConstructor> 
+    	this.${enumConstructor.name} = ${enumConstructor.name};
+    </#list>
+    }
 }

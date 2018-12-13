@@ -35,12 +35,13 @@ import org.apache.commons.lang.WordUtils;
 import org.jraf.androidcontentprovidergenerator.Constants;
 
 public class Entity {
-    private static final String TAG = Constants.TAG + Entity.class.getSimpleName();
+    //private static final String TAG = Constants.TAG + Entity.class.getSimpleName();
 
     public static class Json {
         public static final String FIELDS = "fields";
         public static final String CONSTRAINTS = "constraints";
         public static final String DOCUMENTATION = "documentation";
+        public static final String CONSTRUCTOR = "constructor";
         public static final String ID_FIELD = "idField";
     }
 

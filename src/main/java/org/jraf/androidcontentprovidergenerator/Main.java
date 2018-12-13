@@ -42,6 +42,7 @@ import org.apache.commons.io.IOUtils;
 import org.jraf.androidcontentprovidergenerator.model.Constraint;
 import org.jraf.androidcontentprovidergenerator.model.Entity;
 import org.jraf.androidcontentprovidergenerator.model.EnumValue;
+import org.jraf.androidcontentprovidergenerator.model.EnumConstructor;
 import org.jraf.androidcontentprovidergenerator.model.Field;
 import org.jraf.androidcontentprovidergenerator.model.Field.OnDeleteAction;
 import org.jraf.androidcontentprovidergenerator.model.ForeignKey;
@@ -128,21 +129,54 @@ public class Main {
                 String defaultValue = fieldJson.optString(Field.Json.DEFAULT_VALUE);
                 String defaultValueLegacy = fieldJson.optString(Field.Json.DEFAULT_VALUE_LEGACY);
                 String enumName = fieldJson.optString(Field.Json.ENUM_NAME);
+                JSONArray enumConstructorsJson = fieldJson.optJSONArray(Field.Json.ENUM_CONSTRUCTOR);
+                
+                int lenConstructor = 0;
+                List<EnumConstructor> enumConstructors = new ArrayList<>();
+                if (enumConstructorsJson != null) {
+                	lenConstructor = enumConstructorsJson.length();
+                    for (int j = 0; j < lenConstructor; j++) {
+                        Object enumConstructor = enumConstructorsJson.get(j);
+                        if (enumConstructor instanceof JSONObject) {
+                             // Name and documentation
+                            JSONObject enumConstructorJson = (JSONObject) enumConstructor;
+                            String enumConstructorName = enumConstructorJson.getString(Field.Json.ENUM_CONSTRUCTOR_NAME);
+                            String enumConstructorType = enumConstructorJson.getString(Field.Json.ENUM_CONSTRUCTOR_TYPE);
+                            enumConstructors.add(new EnumConstructor(enumConstructorName, Field.Type.fromJsonName(enumConstructorType)));
+                        }
+                    }
+                }
+                
                 JSONArray enumValuesJson = fieldJson.optJSONArray(Field.Json.ENUM_VALUES);
                 List<EnumValue> enumValues = new ArrayList<>();
                 if (enumValuesJson != null) {
                     int enumLen = enumValuesJson.length();
+                    // TODO test if the same structure of constructor and if we have the same length of enumCOnstructor length
                     for (int j = 0; j < enumLen; j++) {
                         Object enumValue = enumValuesJson.get(j);
                         if (enumValue instanceof String) {
                             // Name only
-                            enumValues.add(new EnumValue((String) enumValue, null));
+                            enumValues.add(new EnumValue((String) enumValue, null, null));
                         } else {
                             // Name and documentation
                             JSONObject enumValueJson = (JSONObject) enumValue;
-                            String enumValueName = (String) enumValueJson.keys().next();
-                            String enumValueDocumentation = enumValueJson.getString(enumValueName);
-                            enumValues.add(new EnumValue(enumValueName, enumValueDocumentation));
+                            if (enumValueJson.has(Field.Json.ENUM_VALUES_NAME)) {
+                            	String enumValueName = enumValueJson.getString(Field.Json.ENUM_VALUES_NAME);
+                            	String enumValueDocumentation = enumValueJson.getString(Field.Json.ENUM_VALUES_DOCUMENTATION);
+                            	String enumValueConstructor = enumValueJson.getString(Field.Json.ENUM_VALUES_CONSTRUCTOR);
+	                            
+                            	int lenValueConstructor = enumValueConstructor.split(",").length;
+                            	if (lenValueConstructor != lenConstructor) {
+                            		// throw Error TODO
+                            	      throw new IllegalArgumentException("Invalid Enum: '" + enumValueName + "'");
+                                      
+                            	}
+                            	enumValues.add(new EnumValue(enumValueName, enumValueDocumentation, enumValueConstructor));
+                            } else {
+	                            String enumValueName = (String) enumValueJson.keys().next();
+	                            String enumValueDocumentation = enumValueJson.getString(enumValueName);
+	                            enumValues.add(new EnumValue(enumValueName, enumValueDocumentation, null));
+                            }
                         }
                     }
                 }
@@ -154,7 +188,7 @@ public class Main {
                     foreignKey = new ForeignKey(table, onDeleteAction);
                 }
                 Field field = new Field(entity, name, fieldDocumentation, type, false, isIndex, isNullable, false, defaultValue != null ? defaultValue
-                        : defaultValueLegacy, enumName, enumValues, foreignKey);
+                        : defaultValueLegacy, enumName, enumConstructors, enumValues, foreignKey);
                 entity.addField(field);
             }
 
@@ -173,7 +207,7 @@ public class Main {
             Field idField;
             if ("_id".equals(idFieldName)) {
                 // Implicit id field: create a Field named "_id"
-                idField = new Field(entity, "_id", "Primary key.", "Long", true, false, false, true, null, null, null, null);
+                idField = new Field(entity, "_id", "Primary key.", "Long", true, false, false, true, null, null, null, null, null);
                 entity.addField(0, idField);
             } else {
                 // Explicit id field (reference)
@@ -198,6 +232,7 @@ public class Main {
                 }
                 idField.setIsId(true);
             }
+            
 
             // Constraints (optional)
             JSONArray constraintsJson = entityJson.optJSONArray(Entity.Json.CONSTRAINTS);
